@@ -18,10 +18,11 @@ struct ContentView: View {
 	
 	@State var cardCount = Themes.love.count
 	@State var theme = Themes.love
+	@State var color = Color.pink
 	
 	var body: some View {
 		VStack {
-			Text("Memorize!").font(.largeTitle).foregroundColor(.pink).bold()
+			Text("Memorize!").font(.largeTitle).foregroundColor(color).bold()
 			ScrollView {
 				cards
 			}
@@ -34,10 +35,24 @@ struct ContentView: View {
 	
 	var themeChooser: some View {
 		HStack(spacing: 25) {
-			buttonBilder(name: "love", image: "heart")
-			buttonBilder(name: "animals", image: "swift")
-			buttonBilder(name: "flowers", image: "globe.europe.africa")
-		}.foregroundColor(.pink).font(.title3)
+			buttonBilder(name: "love", image: "heart").foregroundColor(.pink)
+			buttonBilder(name: "animals", image: "swift").foregroundColor(.brown)
+			buttonBilder(name: "flowers", image: "globe.europe.africa").foregroundColor(.mint)
+		}.font(.title3)
+	}
+	
+	var cards: some View {
+		LazyVGrid(columns: Array(repeating: GridItem(.adaptive(minimum: 80),
+													 spacing: 10,
+													 alignment: .center),
+								 count: 4), content: {
+			ForEach(0..<cardCount, id: \.self) { index in
+				CarsView(content: theme[index])
+					.aspectRatio(2/3, contentMode: .fit)
+			}
+		})
+		.foregroundColor(color).font(.largeTitle)
+		
 	}
 	
 	func setTheme(name: String) {
@@ -45,15 +60,18 @@ struct ContentView: View {
 			case "love":
 				self.theme = Themes.love.shuffled()
 				self.cardCount = Themes.love.count
+				self.color = Color.pink
 			case "animals":
 				self.theme = Themes.animals.shuffled()
 				self.cardCount = Themes.animals.count
+				self.color = Color.brown
 			case "flowers":
 				self.theme = Themes.flowers.shuffled()
 				self.cardCount = Themes.flowers.count
-				
+				self.color = Color.mint
 			default:
 				self.theme = Themes.love
+				self.color = Color.pink
 		}
 	}
 	
@@ -67,18 +85,6 @@ struct ContentView: View {
 			}
 		}
 	}
-	
-	var cards: some View {
-		LazyVGrid(columns: Array(repeating: GridItem(.adaptive(minimum: 80), spacing: 10, alignment: .center), count: 4), content: {
-			ForEach(0..<cardCount, id: \.self) { index in
-				CarsView(content: theme[index])
-					.aspectRatio(2/3, contentMode: .fit)
-			}
-		})
-		.foregroundColor(.pink).font(.largeTitle)
-		
-	}
-	
 }
 
 struct ContentView_Previews: PreviewProvider {
