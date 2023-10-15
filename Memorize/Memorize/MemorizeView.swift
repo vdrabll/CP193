@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct MemorizeView: View {
 	private enum Themes {
 		static let love = ["🌸", "😍", "😘", "🎂", "🌸", "😍", "😘", "🎂"]
 		static let animals = ["🐻","🐣", "🐽", "🐼", "🐻", "🐣",
@@ -20,6 +20,7 @@ struct ContentView: View {
 	@State var theme = Themes.love
 	@State var color = Color.pink
 	
+	@ObservedObject var viewModel: EmojiViewModel // если что то изменилось - перепиши меня
 	var body: some View {
 		VStack {
 			Text("Memorize!").font(.largeTitle).foregroundColor(color).bold()
@@ -27,8 +28,12 @@ struct ContentView: View {
 				cards
 			}
 			Spacer()
-			themeChooser
-			
+			Button {
+				viewModel.shuffled()
+			} label: {
+				Text("Shuffle")
+			}
+
 		}
 		.padding()
 	}
@@ -42,17 +47,20 @@ struct ContentView: View {
 	}
 	
 	var cards: some View {
-		LazyVGrid(columns: Array(repeating: GridItem(.adaptive(minimum: 80),
+		LazyVGrid(columns: Array(repeating: GridItem(.adaptive(minimum: 85),
 													 spacing: 10,
 													 alignment: .center),
-								 count: 4), content: {
-			ForEach(0..<cardCount, id: \.self) { index in
-				CarsView(content: theme[index])
+								 count: 2), content: {
+			ForEach(viewModel.cards.indices, id: \.self) { index in
+				CarsView(card: viewModel.cards[index])
 					.aspectRatio(2/3, contentMode: .fit)
 			}
 		})
 		.foregroundColor(color).font(.largeTitle)
 		
+	}
+	func shuffle() {
+		viewModel.shuffled()
 	}
 	
 	func setTheme(name: String) {
@@ -89,24 +97,28 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
 	static var previews: some View {
-		ContentView()
+		MemorizeView(viewModel: EmojiViewModel())
 	}
 }
 
 struct CarsView: View {
-	let content: String
-	@State var isFaceUp: Bool = false
+	var card: MemoryGame<String>.Card
+	
+	init(card: MemoryGame<String>.Card) {
+		self.card = card
+	}
 	var body: some View {
 		ZStack {
 			let base = RoundedRectangle(cornerRadius: 20)
+			base.strokeBorder(lineWidth: 10)
 			Group {
-				base.strokeBorder(lineWidth: 10).foregroundColor(.pink)
-				Text(content).font(.largeTitle)
-			}.opacity(isFaceUp ? 1 : 0)
-			base.fill().opacity(isFaceUp ? 0 : 1)
-		}
-		.onTapGesture{
-			isFaceUp.toggle()
+				Text(card.content).font(.largeTitle)
+					.font(.system(size: 200))
+					.minimumScaleFactor(0.01)
+					.aspectRatio(1, contentMode: .fill)
+			}
+			.opacity(card.isFaseUp ? 1 : 0)
+			base.fill().opacity(card.isFaseUp ? 0 : 1)
 		}
 	}
 }
